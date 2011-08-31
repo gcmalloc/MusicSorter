@@ -2,6 +2,7 @@ import os
 from mutagen.mp3 import MP3
 import sys
 import argparse
+import threading 
 
 class MusicFile():
    USEFUL_TAG = {'TPE1':'artist','TALB':'album','TIT2':'title','TRCK':'track'}
@@ -29,28 +30,48 @@ class MusicFile():
    def has_key(self, key):
       return self.tags.has_key(key)
 
-   def pprint(self, maxsize=100):
+   def __str__(self, maxsize=100):
       for k in self.audio.keys():
          if len(str(self.audio[k])) < maxsize:
             sys.stdout.write("   " + k + ":")
             print self.audio[k]
-
-
-def invert(dict):
-   reversed = dict([(v,k) for (k,v) in dict])
-   return reversed
-
-def call(path):
-   dir = os.listdir(path)
-   mp3files = filter(lambda x: x.endswith("mp3"), dir)
-   for i in mp3files:
-      fil = MusicFile(path + "/" +i)
-      if not fil.has_key('title'):
-         print "|"
-   for i in dir:
-      if os.path.isdir(path+"/"+i):
-         call(path+"/"+i)
-
+    
+    def _repr__(self):
+        return self.__str_()
+    
+    def move_with_condition(self, condition):
+        if condition:
+    
+    def condition_parser(self):
+        
+        
+class MusicDir(threading.Thread):
+    MUSIC_TYPES = ['mp3']
+    #lock for the directory test 
+    
+    def __init__(self, path, args):
+        threading.Thread.__init__(self)
+        self.path = path
+        self.args = args
+    
+    def run(self):
+        dir_ls = os.listdir(self.path)
+        for i in filter(MusicDir.filter_types, dir_ls):
+            fil = MusicFile(path + "/" + i)#there is maybe a better way to do it
+            if args.p:
+                print fil
+            else:
+                fil.move_with_condition
+        for i in filter(os.path.is_dir, dir_ls):
+            mus_dir = MusicDir()
+            mus_dir.run()
+        music_files = filter(filter_types, dir_ls)#TODO real test of file type
+        
+    
+    @staticmethod
+    def filter_types(music_file):
+        return x.endswith("mp3")    #TODO real test of file type
+        
 def main():
    parser = argparse.ArgumentParser(description='Sort Music according to id3 tags')
    parser.add_argument('-c', action="store_true", default=False, help="Count the number of Music files that match the descriptor")
@@ -60,7 +81,7 @@ def main():
    parser.add_argument('directories', nargs='+', action="store", metavar="dir", type=str, help="The location of the directories")
    args = parser.parse_args("-c /home/malik/Public")
    print args
-   dir = "/home/malik/Public"
-   call(dir)
+   dir = "/home/malik/Music"
+   MusicDir(dir, args).start()
 
 main()
