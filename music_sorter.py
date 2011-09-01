@@ -1,11 +1,13 @@
 import os
 from mutagen.mp3 import MP3
+from mutagen.flac import FLAC
+from mutagen.waw import WAW
 import sys
 import argparse
 import threading 
 
 class MusicFile():
-   USEFUL_TAG = {'TPE1':'artist','TALB':'album','TIT2':'title','TRCK':'track'}
+   USEFUL_TAG = {'TPE1':'artist', 'TALB':'album', 'TIT2':'title', 'TRCK':'track'}
 
    def __init__(self, path):
       self.path = path
@@ -30,6 +32,7 @@ class MusicFile():
    def has_key(self, key):
       return self.tags.has_key(key)
 
+    #print all tags that mutagen can find
    def __str__(self, maxsize=100):
       for k in self.audio.keys():
          if len(str(self.audio[k])) < maxsize:
@@ -39,15 +42,24 @@ class MusicFile():
     def _repr__(self):
         return self.__str_()
     
+    #return the path if the condition for the existence of the tags are fullfilled
+    #return None otherwise
     def move_with_condition(self, condition):
-        if condition:
+        if condition_tester():
+            return path.substitue#syntax
+        else return none 
     
-    def condition_parser(self):
+    def condition_tester(self, matching ):
+        matching = self.substitute_values(matching)
+        if bool(exec(matching))
         
+    def substitute_values(self, string):
+        return string
         
 class MusicDir(threading.Thread):
     MUSIC_TYPES = ['mp3']
-    #lock for the directory test 
+    #lock for the directory all thread test
+    #Lock()
     
     def __init__(self, path, args):
         threading.Thread.__init__(self)
@@ -58,14 +70,15 @@ class MusicDir(threading.Thread):
         dir_ls = os.listdir(self.path)
         for i in filter(MusicDir.filter_types, dir_ls):
             fil = MusicFile(path + "/" + i)#there is maybe a better way to do it
+            if fil.condition_tester(args.m)
             if args.p:
                 print fil
-            else:
-                fil.move_with_condition
+            if args.m
+                fil.move_with_condition(args.)
         for i in filter(os.path.is_dir, dir_ls):
-            mus_dir = MusicDir()
+            mus_dir = MusicDir(i)
             mus_dir.run()
-        music_files = filter(filter_types, dir_ls)#TODO real test of file type
+        music_files = filter(filter_types, dir_ls)
         
     
     @staticmethod
@@ -74,8 +87,9 @@ class MusicDir(threading.Thread):
         
 def main():
    parser = argparse.ArgumentParser(description='Sort Music according to id3 tags')
-   parser.add_argument('-c', action="store_true", default=False, help="Count the number of Music files that match the descriptor")
+   parser.add_argument('-c', action="stre_true", default=False, help="Count the number of Music files that match the descriptor")
    parser.add_argument('-p', action="store_true", default=False, help="print the path of all the file matching the paramerers")
+   parser.add_argument('-b', action="store_true"), default=False, help="capitalize each word in the title")
    parser.add_argument('-m', action="store", metavar="conditions", type=str, nargs=1, help="File descriptor, ban be list of matching argument separeted by & and |, for respectively and and or. the arguments are in the list of argument")
    parser.add_argument('-s', metavar="location", type=str, help="move the music file according to the list argument, each argument which will be replaced is of this form :{element}")
    parser.add_argument('directories', nargs='+', action="store", metavar="dir", type=str, help="The location of the directories")
