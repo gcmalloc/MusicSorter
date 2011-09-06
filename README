@@ -1,0 +1,7 @@
+Provide a way to sort music according to multiple databases, the directory, the filename and the id
+MusicDatabase
+-Discogs
+-MusicBrainz
+id 
+-amplifind
+
