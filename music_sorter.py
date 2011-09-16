@@ -72,9 +72,9 @@ class MP3MusicFile(MusicFile):
    def __init__(self, path):
       MusicFile.__init__(self, path, MP3)
 
-   class FLACMusicFile(MusicFile):
-      def __init__(self, path):
-         MusicFile__init__(self, path, FLAC)
+class FLACMusicFile(MusicFile):
+   def __init__(self, path):
+      MusicFile__init__(self, path, FLAC)
 
 class MusicDir(threading.Thread):
    m = magic.Magic()
