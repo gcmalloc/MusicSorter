@@ -11,7 +11,7 @@ class MusicFile():
     USEFUL_TAG = {'TPE1':'artist', 'TALB':'album', 'TIT2':'title',
                       'TRCK':'track', 'TCOM':'composer','TDAT':'date',
                         'TYER':'year'}
-
+    
     def __init__(self, path, open_function):
         self.path = path
         try:
@@ -58,11 +58,14 @@ class MusicFile():
      #return None otherwise
     def move_with_condition(self, condition, location):
         if condition_tester(self, condition ):
-                return path.substitue#syntax
+                return move #syntax
         else:
             return none
 
     def condition_tester(self, matching):
+        #we just replace everypart
+        #remove all spaces 
+        exec matching
         #matching = self.substitute_values(matching)
         #replace all occurence of things {} by self.has_key('string')
         pass
@@ -70,7 +73,10 @@ class MusicFile():
      
     def substitute_values(self, string):
         return string
-
+    
+    def move(self, ):
+        pass
+    
 class MP3MusicFile(MusicFile):
     def __init__(self, path):
         MusicFile.__init__(self, path, MP3)
@@ -93,8 +99,7 @@ class MusicDir(threading.Thread):
     def run(self):
         dir_ls = os.listdir(self.path)
         for i in filter(MusicDir.filter_types, dir_ls):
-
-                fil = MusicFile(path + "/" + i)#there is maybe a better way to do it
+                fil = MusicFile(os.path.join(path + "/" + i))#there is maybe a better way to do it
                 if fil.condition_tester(args.m):
                     return
                 if args.p:
@@ -109,7 +114,8 @@ class MusicDir(threading.Thread):
 
     @staticmethod
     def filter_types(music_file):
-        print m.from_file(music_file)
+        print music_file
+        print magic.from_file(music_file)
         return x.endswith("mp3")     #TODO real test of file type
 
 class Params():
@@ -117,12 +123,20 @@ class Params():
     def __init__(self, args):
         self.c = args.c
         self.p = args.p
-        self.m = self.replace_match(args.m[0])
+        if args.m:
+            self.m = self.replace_match(args.m[0])
+        else:
+            self.m = None
+        
 
     def replace_match(self, match):
         while re.search(self.MATCH_REGEX, match):
             match = re.sub(self.MATCH_REGEX, 'self.has_key(\'\\1\')', match)
         return match
+    
+    def __repr__(self):
+        return str(self.c) + " | " + str(self.p) + " | " + str(self.m)
+    
 def main():
     parser = argparse.ArgumentParser(description='Sort Music according to id3 tags')
     parser.add_argument('-c', action="store_true", default=False, help="Count the number of Music files that match the descriptor")
@@ -131,10 +145,12 @@ def main():
     parser.add_argument('-m', action="store", metavar="conditions", type=str, nargs=1, help="File descriptor, ban be list of matching argument separeted by & and |, for respectively and and or. the arguments are in the list of argument")
     parser.add_argument('-s', metavar="location", help="move the music file according to the list argument, each argument which will be replaced is of this form :{element}")
     parser.add_argument('directories', nargs='+', action="store", metavar="dir", type=str, help="The location of the directories")
-    args = parser.parse_args(["-m", "{title}&{album}", "/home/malik/Public"])
+    args = parser.parse_args(["-p", "/home/malik/Music"])
     print args
-    Params(args)
-    #dir = "/home/malik/Public"
-    #MusicDir(dir, args).start()
+    params = Params(args)
+    print args
+    dir = args.directories
+    for i in dir:
+        MusicDir(i, params).run()
 
 main()
