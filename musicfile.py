@@ -1,3 +1,6 @@
+from mutagen.mp3 import MP3
+from mutagen.flac import FLAC
+
 class MusicFile():
    USEFUL_TAG = {'TPE1':'artist', 'TALB':'album', 'TIT2':'title',
                  'TRCK':'track', 'TCOM':'composer','TDAT':'date',
@@ -25,10 +28,10 @@ class MusicFile():
    def sanitize_with_musicBrainz(self):
       pass
 
-   def guess_on_title(self):
+   def guess_musicbrainz(self):
       pass
 
-   def guess_on_sound(self):
+   def guess_sound(self):
       pass
 
    def __getitem__(self, key):
@@ -52,7 +55,7 @@ class MusicFile():
 
     #return the path if the condition for the existence of the tags are fullfilled
     #return None otherwise
-   def move_with_condition(self, condition):
+   def move_with_condition(self):
       if condition_tester():
             return path.substitue#syntax
       else:
