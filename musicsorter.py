@@ -83,6 +83,7 @@ class MusicWalker(threading.Thread):
    
    """
    Wrapper around the magic module to handle audio file only.
+   @param the absolute path to the file we want to analyse
    @return None if the mime_type s not in the MUSIC_TYPES dict.
    """
    @staticmethod
@@ -101,6 +102,10 @@ class Params():
     regex for the part we want to replace by a real call
     """   
     MATCH_REGEX = '{([^{}]*)}'
+    """
+    init function 
+    @param an instance of the ArgumentParser class
+    """
    def __init__(self, args):
       self.flag_count = args.c
       self.flag_print = args.p
