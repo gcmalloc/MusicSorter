@@ -12,14 +12,17 @@ import musicfile
 Directory walker, handle the creation of the musicfile classes instances
 """
 class MusicWalker(threading.Thread):
-    """
-    Integer, correspond to the number of file already read
-    """
+   
+   """
+   Integer, correspond to the number of file already read
+   """
    music_file_count = 0
+   
    """
    Initialisation of the magic file library
    """
    magic = magic.Magic()
+   
    """
    dictionnary that establish a correspondance between mime type and 
    music type file, as handled by the musicfile module
@@ -34,10 +37,10 @@ class MusicWalker(threading.Thread):
       self.path = path
       self.args = args
     
-    """
-    launch the walker, create MusicFile instance accoring to their type
-    then handle 
-    """
+   """
+   launch the walker, create MusicFile instance accoring to their type
+   then handle 
+   """
    def run(self):
       dir_ls = os.listdir(self.path)
       for element in dir_ls:
@@ -56,7 +59,7 @@ class MusicWalker(threading.Thread):
                      print music_file
                   if args.flag_capital:
                      music_file.capitalize_all()
-                  if args.flag_move()
+                  if args.flag_move():
                      music_file.move_with_condition()
                   if arg.flag_brainz:
                      music_file.sanitize_with_musicBrainz()
@@ -98,14 +101,14 @@ file tags
 """
 class Params():
    
-    """
-    regex for the part we want to replace by a real call
-    """   
-    MATCH_REGEX = '{([^{}]*)}'
-    """
-    init function 
-    @param an instance of the ArgumentParser class
-    """
+   """
+   regex for the part we want to replace by a real call
+   """   
+   MATCH_REGEX = '{([^{}]*)}'
+   """
+   init function 
+   @param an instance of the ArgumentParser class
+   """
    def __init__(self, args):
       self.flag_count = args.c
       self.flag_print = args.p
