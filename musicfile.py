@@ -23,16 +23,11 @@ class MusicFile():
     @param path:
     @param function used to get the tags
     """
-    def __init__(self, path, open_function):
+    def __init__(self, path):
         """
         absolute path to the path
         """
         self.path = path
-        try:
-            self.audio = open_function(path)
-        except:
-            self = None
-            return
         self.tags = dict()
         self.parse_tag()
 
@@ -80,7 +75,8 @@ class MusicFile():
     """
     def __setitem__(self, key, value):
         self.tags[key] = str(value)
-        #write down the tags
+        #write down the tags directly with mutagen
+        
 
     def keys(self):
             return self.tags.keys()
@@ -88,7 +84,7 @@ class MusicFile():
     """
     test if the music file contain a key
     """
-    def has_key(self, key):
+    def has_tag(self, tag):
         return key in self.tags
 
     """
@@ -118,3 +114,31 @@ class MusicFile():
     """
     def condition_tester(self, matching):
         pass
+
+#Subclasses which handle the multiple format
+
+"""
+Subclass of MusicFile for MP3 only
+"""
+
+
+class Mp3File(MusicFile):
+
+    """
+    Constructor for the mp3 file
+    """
+    def __init__(self, path):
+        self.audio = MP3(path)
+        MusicFile.__init__(self, path)
+"""
+Subclass of MusicFile for FLAC only
+"""
+
+class FlacFile(MusicFile):
+    
+    """
+    Constructor for the Flac file
+    """
+    def __init__(self, path):
+        self.audio = FLAC(path)
+        MusicFile.__init__(self, path)

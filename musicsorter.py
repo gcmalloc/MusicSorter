@@ -115,6 +115,7 @@ class Params():
     @param an instance of the ArgumentParser class
     """
     def __init__(self, args):
+        self.dir = args.dir
         self.flag_count = args.c
         self.flag_print = args.p
         self.flag_capital = args.C
@@ -132,7 +133,7 @@ class Params():
     """
     def replace_match(self, match):
         while re.search(self.MATCH_REGEX, match):
-            match = re.sub(self.MATCH_REGEX, 'self.has_key(\'\\1\')', match)
+            match = re.sub(self.MATCH_REGEX, 'self.has_tag(\'\\1\')', match)
         return match
 
 """
@@ -166,9 +167,7 @@ def main():
     parser.add_argument('directories', nargs='+', action="store", \
     metavar="dir", type=str, help="The location of the directories")
     args = parser.parse_args(["-m", "{title}&{album}", "/home/malik/Public"])
-    print args
-    Params(args)
-    dir = "/home/malik/Public"
-    MusicDir(dir, args).start()
+    clean_params = Params(args)
+    MusicWalker(clean_params.dir, clean_params).start()
 
 main()
