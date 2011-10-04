@@ -2,21 +2,42 @@ import os
 import sys
 import argparse
 import threading
-import magic
 import re
+import magic
 
+import musicfile
+
+
+"""
+Directory walker, handle the creation of the musicfile classes instances
+"""
 class MusicWalker(threading.Thread):
+    """
+    Integer, correspond to the number of file already read
+    """
    music_file_count = 0
+   """
+   Initialisation of the magic file library
+   """
    m = magic.Magic()
+   """
+   dictionnary that establish a correspondance between mime type and 
+   music type file, as handled by the musicfile module
+   """
    MUSIC_TYPES = {'audio/mpeg':'mp3','audio/flac':'flac'}
-   #lock for the directory all thread test
-   #Lock()
 
+   """
+   Default initialisation 
+   """
    def __init__(self, path, args):
       threading.Thread.__init__(self)
       self.path = path
       self.args = args
-
+    
+    """
+    launch the walker, create MusicFile instance accoring to their type
+    then handle 
+    """
    def run(self):
       dir_ls = os.listdir(self.path)
       for element in dir_ls:
@@ -28,6 +49,8 @@ class MusicWalker(threading.Thread):
             file_type = get_music_type()
             if file_type:
                music_file = MusicFile(os.path.join(self.path, i))
+               #sanitize the file's tag according to the parameters stored 
+               #in flag
                if music_file:
                   if args.flag_print:
                      print music_file
@@ -43,7 +66,13 @@ class MusicWalker(threading.Thread):
                      music_file.guess_sound()
                   if args.flag_move:
                      fil.move_with_condition(args)
-      
+                     
+   """
+   extract the type of a file according to the music file notation
+   @param the absolute path of the music file
+   @return  None if the file is not a recognised music file
+            the music file type according to the music type notation
+   """
    @staticmethod
    def get_music_type(music_file):     
       music_type = get_type(music_file)
@@ -52,14 +81,25 @@ class MusicWalker(threading.Thread):
       else:
          return None
    
+   """
+   Wrapper around the magic module to handle audio file only.
+   @return None if the mime_type s not in the MUSIC_TYPES dict.
+   """
    @staticmethod
    def get_type(music_file):
       mime_type = magic.from_file(music_file, mime=True)
       music_type = self.MUSIC_TYPES.get(mime_type)
       return music_type
 
+"""
+Flag handler, rename the flag, create the matching pattern for the music
+file tags
+"""
 class Params():
-   MATCH_REGEX = '{([^{}]*)}'
+    """
+    regex for the part we want to replace by 
+    """   
+    MATCH_REGEX = '{([^{}]*)}'
    def __init__(self, args):
       self.flag_count = args.c
       self.flag_print = args.p
