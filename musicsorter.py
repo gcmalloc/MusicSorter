@@ -106,9 +106,9 @@ file tags
 class Params():
 
     """
-    regex for the part we want to replace by a real call
+    Separator for the match
     """
-    MATCH_REGEX = '{([^{}]*)}'
+    MATCH_SEPARATOR = ","
 
     """
     init function
@@ -129,11 +129,12 @@ class Params():
     """
     replace to match to a python expression
     Not safe for now
-    @return the python expression
+    @return an array of tag that must be in the expression
     """
     def replace_match(self, match):
-        while re.search(self.MATCH_REGEX, match):
-            match = re.sub(self.MATCH_REGEX, 'self.has_tag(\'\\1\')', match)
+        matching_values = match.split(Params.MATCH_SEPARATOR)
+        #ignore trailing spaces
+        matching_values = [i.strip() for i in matching_values]
         return match
 
 """
@@ -166,7 +167,7 @@ def main():
     #argument which will be replaced is of this form :{element}")
     parser.add_argument('directories', nargs='+', action="store", \
     metavar="dir", type=str, help="The location of the directories")
-    args = parser.parse_args(["-m", "{title}&{album}", "/home/malik/Public"])
+    args = parser.parse_args(["-m", "title,album", "/home/malik/Public"])
     clean_params = Params(args)
     MusicWalker(clean_params.dir, clean_params).start()
 

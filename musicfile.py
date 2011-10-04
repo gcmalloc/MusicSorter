@@ -76,7 +76,6 @@ class MusicFile():
     def __setitem__(self, key, value):
         self.tags[key] = str(value)
         #write down the tags directly with mutagen
-        
 
     def keys(self):
             return self.tags.keys()
@@ -103,17 +102,12 @@ class MusicFile():
             None otherwise
     """
     def move_with_condition(self):
-        if condition_tester():
+        #test if all tags are defined for this element
+        if filter(lambda x, y: x and y,  self., True):
                 return path.substitue  # syntax
         else:
             return none
 
-    """
-    test if the file match the matching params on the tags
-    a way to test the presence of tags in the method
-    """
-    def condition_tester(self, matching):
-        pass
 
 #Subclasses which handle the multiple format
 
@@ -130,12 +124,14 @@ class Mp3File(MusicFile):
     def __init__(self, path):
         self.audio = MP3(path)
         MusicFile.__init__(self, path)
+
 """
 Subclass of MusicFile for FLAC only
 """
 
+
 class FlacFile(MusicFile):
-    
+
     """
     Constructor for the Flac file
     """
