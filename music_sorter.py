@@ -1,6 +1,7 @@
 import os
 from mutagen.mp3 import MP3
 from mutagen.flac import FLAC
+#from mutagen.ogg import OGG
 import sys
 import argparse
 import threading
@@ -12,14 +13,8 @@ class MusicFile():
                       'TRCK':'track', 'TCOM':'composer','TDAT':'date',
                         'TYER':'year'}
     
-    def __init__(self, path, open_function):
+    def __init__(self, path):
         self.path = path
-        try:
-            self.audio = open_function(path)
-        except:
-            self = None
-            return
-
         self.tags = dict()
 
     def parse_tag():
@@ -29,7 +24,7 @@ class MusicFile():
             if v != "":
                 try:
                     self.tags[v] = self.audio[k]
-                except KeyError:
+                except:
                     pass
 
     def __getitem__(self, key):
@@ -45,7 +40,6 @@ class MusicFile():
         return self.tags.has_key(key)
 
      #print all tags that mutagen can find
-    def __str__(self, maxsize=100):
         for k in self.audio.keys():
             if len(str(self.audio[k])) < maxsize:
                 sys.stdout.write("  " + k + ":")
@@ -65,11 +59,10 @@ class MusicFile():
     def condition_tester(self, matching):
         #we just replace everypart
         #remove all spaces 
-        exec matching
+        #exec matching
         #matching = self.substitute_values(matching)
         #replace all occurence of things {} by self.has_key('string')
-        pass
-     
+        return True
      
     def substitute_values(self, string):
         return string
@@ -79,44 +72,61 @@ class MusicFile():
     
 class MP3MusicFile(MusicFile):
     def __init__(self, path):
-        MusicFile.__init__(self, path, MP3)
+        MusicFile.__init__(self, path)
+        self.audio = MP3(path)
 
 class FLACMusicFile(MusicFile):
     def __init__(self, path):
-        MusicFile__init__(self, path, FLAC)
+        MusicFile.__init__(self, path)
+        try:
+            self.audio = FLAC(path)
+        except:
+            self = None
+            return
 
+#class OGGMusicFile(MusicFile):
+    #def __init__(self, path):
+        #MusicFile.__init__(self, path)
+        #try:
+            #self.audio = OGG(path)
+        #except:
+            #pass
+            
 class MusicDir(threading.Thread):
     m = magic.Magic()
     MUSIC_TYPES = ['mp3']
+    args = None
      #lock for the directory all thread test
      #Lock()
 
-    def __init__(self, path, args):
+    def __init__(self, path, args=None):
+        if args:
+            MusicDir.args = args
         threading.Thread.__init__(self)
         self.path = path
-        self.args = args
 
     def run(self):
         dir_ls = os.listdir(self.path)
-        for i in filter(MusicDir.filter_types, dir_ls):
-                fil = MusicFile(os.path.join(path + "/" + i))#there is maybe a better way to do it
-                if fil.condition_tester(args.m):
-                    return
-                if args.p:
+        dir_ls = [os.path.join(self.path, i) for i in dir_ls]
+        music_file_count = 0
+        for i in filter(self.filter_types, dir_ls):
+                music_file_count += 1
+                fil = MP3MusicFile(i)#there is maybe a better way to do it
+                if fil.condition_tester(MusicDir.args.m):
+                    pass
+                if MusicDir.args.p:
                     print fil
-                if args.m:
+                if MusicDir.args.m:
                     fil.move_with_condition(args)
-        for i in filter(os.path.is_dir, dir_ls):
+        for i in filter(os.path.isdir, dir_ls):
                 mus_dir = MusicDir(i)
-                mus_dir.run()
-        music_files = filter(filter_types, dir_ls)
+                music_file_count += mus_dir.run()
+        return music_file_count
 
-
-    @staticmethod
-    def filter_types(music_file):
-        print music_file
-        print magic.from_file(music_file)
-        return x.endswith("mp3")     #TODO real test of file type
+    def filter_types(self, music_file):
+        if os.path.isfile(music_file):
+            print magic.from_file(music_file)
+        return music_file.endswith("mp3")     #TODO real test of file type
 
 class Params():
     MATCH_REGEX = '{([^{}]*)}'
@@ -146,11 +156,9 @@ def main():
     parser.add_argument('-s', metavar="location", help="move the music file according to the list argument, each argument which will be replaced is of this form :{element}")
     parser.add_argument('directories', nargs='+', action="store", metavar="dir", type=str, help="The location of the directories")
     args = parser.parse_args(["-p", "/home/malik/Music"])
-    print args
     params = Params(args)
-    print args
     dir = args.directories
     for i in dir:
-        MusicDir(i, params).run()
+        print MusicDir(i, params).run()
 
 main()
