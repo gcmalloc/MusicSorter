@@ -1,6 +1,9 @@
 from mutagen.mp3 import MP3
 from mutagen.flac import FLAC
 
+"""
+
+"""
 class MusicFile():
    USEFUL_TAG = {'TPE1':'artist', 'TALB':'album', 'TIT2':'title',
                  'TRCK':'track', 'TCOM':'composer','TDAT':'date',

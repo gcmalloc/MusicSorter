@@ -19,13 +19,13 @@ class MusicWalker(threading.Thread):
    """
    Initialisation of the magic file library
    """
-   m = magic.Magic()
+   magic = magic.Magic()
    """
    dictionnary that establish a correspondance between mime type and 
    music type file, as handled by the musicfile module
    """
    MUSIC_TYPES = {'audio/mpeg':'mp3','audio/flac':'flac'}
-
+   
    """
    Default initialisation 
    """
@@ -87,7 +87,7 @@ class MusicWalker(threading.Thread):
    """
    @staticmethod
    def get_type(music_file):
-      mime_type = magic.from_file(music_file, mime=True)
+      mime_type = self.magic.from_file(music_file, mime=True)
       music_type = self.MUSIC_TYPES.get(mime_type)
       return music_type
 
@@ -96,8 +96,9 @@ Flag handler, rename the flag, create the matching pattern for the music
 file tags
 """
 class Params():
+   
     """
-    regex for the part we want to replace by 
+    regex for the part we want to replace by a real call
     """   
     MATCH_REGEX = '{([^{}]*)}'
    def __init__(self, args):
@@ -110,12 +111,21 @@ class Params():
       #TODO
       self.flag_move = False
       self.match = self.replace_match(args.m[0])
-
+      
+   """
+   replace to match to a python expression
+   Not safe for now
+   @return the python expression
+   """
    def replace_match(self, match):
       while re.search(self.MATCH_REGEX, match):
          match = re.sub(self.MATCH_REGEX, 'self.has_key(\'\\1\')', match)
       return match
-      
+   
+"""
+main
+handle the parsing of the argument and the first call to MusicWalker
+"""
 def main():
    parser = argparse.ArgumentParser(description='Sort Music according to id3 tags')
    parser.add_argument('-c', action="store_true", default=False, help="Count the number of Music files that match the descriptor")
