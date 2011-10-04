@@ -1,7 +1,7 @@
 Provide a way to sort music according to multiple databases, the directory, the filename and the id
 MusicDatabase
--Discogs
--MusicBrainz
-id 
--amplifind
+#Discogs: http://www.discogs.com/
+MusicBrainz: http://musicbrainz.org/
+using music ip to find the sound track
+musicIP: http://www.amplifindmusicservices.com/
 
