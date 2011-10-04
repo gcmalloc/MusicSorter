@@ -8,6 +8,7 @@ give the way to access in a simple fashion the tags
 
 
 class MusicFile():
+
     """
     Dictionnary to transform the standardised id3 tag to a more human
     readable tag, this dictionnary is also a list of tag we extract from
