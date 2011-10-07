@@ -101,13 +101,18 @@ class MusicFile():
             are fullfilled
             None otherwise
     """
-    def move_with_condition(self):
+    def move_with_condition(self, condition, new_place):
         #test if all tags are defined for this element
         if filter(lambda x, y: x and y,  self., True):
-                return path.substitue  # syntax
+            #move the file
+            new_path = new_place
+            os.move(path, newpath)
         else:
-            return none
-
+            #keep it there  
+            
+    """
+    Create the new folder if needed, return the 
+    """
 
 #Subclasses which handle the multiple format
 
