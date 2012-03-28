@@ -97,11 +97,12 @@ class MusicFile():
         
     """
     def move(self, new_basedir, path_format):
-        new_path = os.join(new_basedir, formatted_path)
+        formatted_path = path_format.format(self.tags)
+        new_dir = os.join(new_basedir, formatted_path)
         try:
             mkdir_p(new_basedir)
         except OSError:
-            logging.info("Directory %s already exist" % new_path)
+            logging.info("Directory %s already exist" % new_dir)
         #extract the extension
         try:
             ext = self.get_extension()

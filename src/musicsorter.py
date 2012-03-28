@@ -49,7 +49,7 @@ class MusicWalker(threading.Thread):
             #sanitize the file's tag according to the parameters stored
             #in flag
             if music_file:
-                if self.args.flag_count:
+                if self.args.flag_count: #DONE
                     self.music_file_count += 1
                 if self.args.flag_print:
                     print(music_file) #DONE
