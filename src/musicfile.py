@@ -101,8 +101,7 @@ class MusicFile():
     """
     def capitalize_tag(self, tag=None):
         for tag in self.tags:
-            #self.tags[tag] = 
-            print([string.capwords(i) for i in self.tags[tag]])
+            self.tags[tag] = [string.capwords(i) for i in self.tags[tag]]
     
     """
     save modification to the id3 tag
