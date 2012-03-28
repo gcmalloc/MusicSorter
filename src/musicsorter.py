@@ -28,7 +28,7 @@ class MusicWalker(threading.Thread):
     then handle
     """
     def run(self):
-        print "launch"
+        print("launch")
         for directory in self.directories:
             for e in os.walk(directory, self.dir_parser):
                 self.dir_parser(*e)
@@ -40,6 +40,7 @@ class MusicWalker(threading.Thread):
     """
     def dir_parser(self, dirpath, dirnames, filenames):
         for f in filenames:
+            logging.debug(f)
             abs_file_path = os.path.join(dirpath, f)
             try:
                 music_file = MusicFile(abs_file_path)
@@ -62,25 +63,23 @@ class MusicWalker(threading.Thread):
                 if self.args.flag_audio_guess:
                     music_file.guess_sound()
                 if self.args.flag_move:
-                    fil.move_with_condition(self.args)
+                    music_file.move_with_condition(self.args)
                 music_file.save()
-    """
-    Wrapper around the magic module to handle audio file only.
-    @param the absolute path to the file we want to analyse
-    @return None if the mime_type s not in the MUSIC_TYPES dict.
-    """
-    @staticmethod
-    def get_type(music_file):
-        mime_type = self.magic.from_file(music_file, mime=True)
-        music_type = self.MUSIC_TYPES.get(mime_type)
-        return music_type
+    #"""
+    #Wrapper around the magic module to handle audio file only.
+    #@param the absolute path to the file we want to analyse
+    #@return None if the mime_type s not in the MUSIC_TYPES dict.
+    #"""
+    #@staticmethod
+    #def get_type(music_file):
+        #mime_type = magic(music_file, mime=True)
+        #music_type = self.MUSIC_TYPES.get(mime_type)
+        #return music_type
 
 """
 Flag handler, rename the flag, create the matching pattern for the music
 file tags
 """
-
-
 class Params():
 
     """
@@ -116,12 +115,11 @@ class Params():
         matching_values = [i.strip() for i in matching_values]
         return match
 
+
 """
 main
 handle the parsing of the argument and the first call to MusicWalker
 """
-
-
 def main():
     parser = argparse.ArgumentParser(description='Sort Music according \
     to id3 tags')
@@ -141,16 +139,19 @@ def main():
     type=str, nargs=1, help="File descriptor, ban be list of matching \
     argument separeted by & and |, for respectively and and or. the \
     arguments are in the list of argument")
+    parser.add_argument('-d', action="store_true", default=False, \
+    help="Toggle debug mode")
     #parser.add_argument('-s', metavar="location", \
     #help="Move the music file according to the list argument, each \
     #argument which will be replaced is of this form :{element}")
     parser.add_argument('directories', nargs='+', action="store", \
     metavar="directory", type=str, help="The location of the directories")
     args = parser.parse_args(sys.argv[1:])
+    if args.d == True:
+        logging.basicConfig(level=logging.DEBUG)
     clean_params = Params(args)
     t = MusicWalker(clean_params)
-    t.start()
-    t.join()
+    t.run()
     
 
 #MusicWalker(sys.argv[1], None).run()

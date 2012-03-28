@@ -5,6 +5,7 @@ import string
 import os
 import errno
 import logging
+from musicbrainz2.webservice import Query, TrackFilter, WebServiceError
 
 class NotAMusicFileException(Exception):
     pass
@@ -13,8 +14,7 @@ class NotAMusicFileException(Exception):
 super class for all the music file of all type
 give the way to access in a simple fashion the tags
 """
-
-class MusicFile():
+class MusicFile(object):
 
     """
     initialisation function
@@ -36,7 +36,38 @@ class MusicFile():
     just idea for the moment
     """
     def sanitize_with_musicBrainz(self):
-        pass
+        titleName = self.tags['title'][0]
+        artistName = self.tags['artist'][0]
+        albumName = self.tags['album'][0]
+        q = Query()
+        try:
+            logging.debug(titleName)
+            logging.debug(artistName)
+            f = TrackFilter(title=titleName, artistName=artistName, releaseTitle=albumName)
+            results = q.getTracks(f)
+        except WebServiceError as e:
+            logging.debug(e)
+            logging.error("Failed to contact musicbrainz server.")
+            return
+        if len(results) == 0:
+            logging.debug("No result found")
+            return 
+            
+        for result in results:
+            logging.debug("A result was found")
+            if result.score == 100:
+                track = result.track
+                logging.debug("A perfect match seems to be found !!")
+                possible_releases = track.getReleases()
+                if len(possible_releases) != 1:
+                    logging.debug("Multiple album, I will try to guess")
+                    #TODO
+                else:
+                    release = possible_releases[0].getTitle()
+                self.tags['title'] = track.title
+                self.tags['artist'] = track.artist.name
+                self.tags['album'] = release
+                return
 
     def guess_musicbrainz(self):
         pass
@@ -94,13 +125,13 @@ class MusicFile():
         if condition:
             self.move(new_basedir, path_format)
     """
-        
+    move this music file in the good place
     """
     def move(self, new_basedir, path_format):
         formatted_path = path_format.format(self.tags)
         new_dir = os.join(new_basedir, formatted_path)
         try:
-            mkdir_p(new_basedir)
+            mkdir_p(new_dir)
         except OSError:
             logging.info("Directory %s already exist" % new_dir)
         #extract the extension
@@ -123,7 +154,7 @@ class MusicFile():
     the real file type.
     """
     def get_extension(self):
-        return os.path.splitext(path)[-1]
+        return os.path.splitext(self.path)[-1]
 
     """
         capitalize all tag by default or a list of specific tag
