@@ -14,17 +14,14 @@ Directory walker, handle the creation of the musicfile classes instances
 class MusicWalker(threading.Thread):
 
     """
-    Integer, correspond to the number of file already read
-    """
-    music_file_count = 0
-
-    """
     Default initialisation
     """
     def __init__(self, args):
         threading.Thread.__init__(self)
         self.directories = args.directories
         self.args = args
+        self.music_file_count = 0
+
 
     """
     launch the walker, create MusicFile instance accoring to their type
@@ -35,6 +32,8 @@ class MusicWalker(threading.Thread):
         for directory in self.directories:
             for e in os.walk(directory, self.dir_parser):
                 self.dir_parser(*e)
+        if self.args.flag_count:
+            print("There is : %i music files there" % self.music_file_count)
     
     """
     parse the directory
@@ -50,12 +49,12 @@ class MusicWalker(threading.Thread):
             #sanitize the file's tag according to the parameters stored
             #in flag
             if music_file:
+                if self.args.flag_count:
+                    self.music_file_count += 1
                 if self.args.flag_print:
-                    print(music_file)
+                    print(music_file) #DONE
                 if self.args.flag_capital:
-                    music_file.capitalize_tag()
-                if self.args.flag_move:
-                    music_file.move_with_condition()
+                    music_file.capitalize_tag() #DONE
                 if self.args.flag_brainz:
                     music_file.sanitize_with_musicBrainz()
                 if self.args.flag_brainz_force:
@@ -64,7 +63,7 @@ class MusicWalker(threading.Thread):
                     music_file.guess_sound()
                 if self.args.flag_move:
                     fil.move_with_condition(self.args)
-
+                music_file.save()
     """
     Wrapper around the magic module to handle audio file only.
     @param the absolute path to the file we want to analyse

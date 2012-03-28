@@ -1,8 +1,10 @@
-from mutagen.mp3 import MP3
-from mutagen.flac import FLAC
 from mutagen.easyid3 import EasyID3 as ID3
 from mutagen.id3 import ID3NoHeaderError
+
 import string
+import os
+import errno
+import logging
 
 class NotAMusicFileException(Exception):
     pass
@@ -25,7 +27,7 @@ class MusicFile():
         """
         try:
             self.tags = ID3(path)
-        except ID3NoHeaderError as e:
+        except ID3NoHeaderError:
             raise NotAMusicFileException
         self.path = path
 
@@ -64,14 +66,14 @@ class MusicFile():
         #write down the tags directly with mutagen
 
     def keys(self):
-            return self.tags.keys()
+        return self.tags.keys()
 
     """
     test if the music file contain a certain tag
     """
-    def has_tag(self, tag):
-        return key in self.tags
-
+    def has_key(self, tag):
+        return tag in self.tags
+    
     """
      print all tags that mutagen can find
      @param maximum length of all the content
@@ -81,21 +83,47 @@ class MusicFile():
         for k in self.tags.keys():
             ret += ["\t %s:%s" % (k, self.tags[k])]
         return "\n".join(ret)
+    
     """
     @return the path if the condition for the existence of the tags
             are fullfilled
             None otherwise
     """
-    def move_with_condition(self, condition, new_place):
+    def move_with_condition(self, condition, new_basedir, path_format):
         #test if all tags are defined for this element
-        if filter(lambda x, y: x and y, True):
-            #move the file
-            new_path = new_place
-            os.move(path, newpath)
-        else:
-            #keep it there  
-            pass
-    
+        if condition:
+            self.move(new_basedir, path_format)
+    """
+        
+    """
+    def move(self, new_basedir, path_format):
+        new_path = os.join(new_basedir, formatted_path)
+        try:
+            mkdir_p(new_basedir)
+        except OSError:
+            logging.info("Directory %s already exist" % new_path)
+        #extract the extension
+        try:
+            ext = self.get_extension()
+        except:#TODO specify
+            logging.error("Moving file %s failed, extension is undefined"
+            % self.path)
+            return
+        formatted_path = path_format.format(self.tags)
+        new_filename = os.path.join(new_basedir, formatted_path + ext)
+        try:
+            os.mv(self.path, new_filename)
+        except OSError:
+            logging.error("Moving file %s failed, cannot move the file")
+
+    """
+    return the extension of this file according to it's name
+    it can be not accurate if the extention doesn't correspond to
+    the real file type.
+    """
+    def get_extension(self):
+        return os.path.splitext(path)[-1]
+
     """
         capitalize all tag by default or a list of specific tag
     """
@@ -108,3 +136,12 @@ class MusicFile():
     """
     def save(self):
         self.tags.save()
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as e: # Python >2.5
+        if e.errno == errno.EEXIST:
+            pass
+        else: 
+            raise
