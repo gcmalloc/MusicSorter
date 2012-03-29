@@ -62,6 +62,7 @@ class MusicFile(object):
                 if len(possible_releases) != 1:
                     logging.debug("Multiple album, I will try to guess")
                     #TODO
+                    
                 else:
                     release = possible_releases[0].getTitle()
                 self.tags['title'] = track.title
@@ -77,7 +78,12 @@ class MusicFile(object):
     """
     def guess_sound(self):
         pass
-
+    
+    """
+    """
+    def guess_path(self):
+        splitted_path = os.path.dirname(self.path)
+        
     #end of sanitizing methods
     """
     get the tag, the name of the tag must be in the value of USEFUL_TAG

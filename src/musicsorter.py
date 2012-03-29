@@ -103,7 +103,9 @@ class Params():
         #TODO
         self.flag_move = False
         #self.match = self.replace_match(args.m[0])
-
+        if args.d == True:
+            self.toggle_debug_mode()
+    
     """
     replace to match to a python expression
     Not safe for now
@@ -115,7 +117,11 @@ class Params():
         matching_values = [i.strip() for i in matching_values]
         return match
 
-
+    """
+    toggle the debug mode
+    """
+    def toggle_debug_mode(self):
+        logging.basicConfig(level=logging.DEBUG)
 """
 main
 handle the parsing of the argument and the first call to MusicWalker
@@ -127,6 +133,8 @@ def main():
     help="Count the number of Music files that match the descriptor")
     parser.add_argument('-p', action="store_true", default=False, \
     help="Print the path of all the file matching the paramerers")
+    parser.add_argument('-P', action="store_true", default=False, \
+    help="Use the path of the file to try to guess non existing tags")
     parser.add_argument('-C', action="store_true", default=False, \
     help="Capitalize each word in all the tags")
     parser.add_argument('-b', action="store_true", default=False, \
@@ -147,8 +155,6 @@ def main():
     parser.add_argument('directories', nargs='+', action="store", \
     metavar="directory", type=str, help="The location of the directories")
     args = parser.parse_args(sys.argv[1:])
-    if args.d == True:
-        logging.basicConfig(level=logging.DEBUG)
     clean_params = Params(args)
     t = MusicWalker(clean_params)
     t.run()
