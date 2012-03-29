@@ -1,11 +1,24 @@
-from mutagen.easyid3 import EasyID3 as ID3
+from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3NoHeaderError
+from mutagen.flac import FLACNoHeaderError
+from mutagen.flac import FLAC
+from mutagen.apev2 import APEv2
+from mutagen.mp3 import MP3
+
 
 import string
 import os
 import errno
 import logging
 from musicbrainz2.webservice import Query, TrackFilter, WebServiceError
+import difflib
+import acoustid
+
+"""
+The acoustid api kay to access the database.
+"""
+
+ACOUSTID_KEY = "jwsxE9b6"
 
 """
 Exception launched if the music file is not a id3v2 tag
@@ -22,20 +35,26 @@ give the way to access in a simple fashion the tags
 
 
 class MusicFile(object):
-
+    
     """
     initialisation function
     @param path:
     @param function used to get the tags
     """
     def __init__(self, path):
-        """
-        absolute path to the path
-        """
         try:
-            self.tags = ID3(path)
+            self.tags = EasyID3(path)
         except ID3NoHeaderError:
-            raise NotAMusicFileException
+            try:
+                logging.debug("trying explicit flac")
+                help(FLAC)
+                self.tags = FLAC(path, ID3=EasyID3)
+            except FLACNoHeaderError:
+                try:
+                    logging.debug("trying explicit mp3")
+                    self.tags = MP3(path, ID3=EasyID3)
+                except FLACNoHeaderError:
+                    raise NotAMusicFileException
         self.path = path
 
     """
@@ -43,9 +62,9 @@ class MusicFile(object):
     just idea for the moment
     """
     def sanitize_with_musicBrainz(self):
-        titleName = self.tags['title'][0]
-        artistName = self.tags['artist'][0]
-        albumName = self.tags['album'][0]
+        titleName = self.tags['title']
+        artistName = self.tags['artist']
+        albumName = self.tags['album']
         q = Query()
         try:
             logging.debug(titleName)
@@ -88,13 +107,30 @@ class MusicFile(object):
     guess the title from the sound using a sound
     """
     def guess_sound(self):
-        pass
+        if self.has_key('title') and self.has_key('artist'):
+            logging.debug("We already have title and artist for this one")
+            return
+        logging.debug(self.path)
+        logging.debug(ACOUSTID_KEY)
+        for score, recording_id, title, artist in acoustid.match(ACOUSTID_KEY, self.path):
+        #for e in acoustid.match(ACOUSTID_KEY, self.path):
+            if score > 0.99:
+                #we are quite sure
+                logging.debug("Match Found score:%s, title:%s, artist:%s", score, title, artist)
+                self.tags['title'] = title
+                self.tags['artist'] = artist
 
     """
     guess the tags from the path
     """
     def guess_path(self):
-        splitted_path = os.path.dirname(self.path)
+        #let's try to find album name or artist name from the path, if it's not already set
+        clean_path = path_split(self.path)
+        logging.debug("Trying to guess on %s" % str(clean_path))
+        logging.debug("Clean title:%s" % clean_title(clean_path[-1]))
+        #try to guess the album if not already set
+        if not self['title']: #our worst case
+            clean_path[-1]
 
     #end of sanitizing methods
     """
@@ -103,7 +139,14 @@ class MusicFile(object):
     @return the value of the tag
     """
     def __getitem__(self, key):
-        return self.tags[key]
+        try:
+            tag = self.tags[key]
+        except KeyError:
+            return None
+        if not tag:
+            return None
+        else:
+            return tag
 
     """
     set the tag, the name of the tag must be in the value of USEFUL_TAG
@@ -130,7 +173,7 @@ class MusicFile(object):
     def __str__(self, maxsize=100):
         ret = [self.path]
         for k in self.tags.keys():
-            ret += ["\t %s:%s" % (k, self.tags[k])]
+            ret += ["\t %s:%s" % (k, self[k])]
         return "\n".join(ret)
 
     """
@@ -188,6 +231,11 @@ class MusicFile(object):
     def save(self):
         self.tags.save()
 
+
+class FlacFile(MusicFile):
+    def __init__(self):
+      self.tags = FLAC("example.flac")
+
 """
 Emulate the mkdir -p command, create a directory and all it's children
 """
@@ -201,3 +249,15 @@ def mkdir_p(path):
             pass
         else:
             raise
+
+
+def path_split(path, depth=3):
+    split_path = []
+    for i in range(depth + 1):
+        path = os.path.split(path)
+        split_path = [path[1]] + split_path
+        path = path[0]
+    return split_path[1:]
+
+def clean_title(title):
+    return os.path.splitext(title)[0].strip(string.digits + '- ')

@@ -51,18 +51,27 @@ class MusicWalker(threading.Thread):
             #sanitize the file's tag according to the parameters stored
             #in flag
             if music_file:
+                #STATS
                 if self.args.flag_count:
                     self.music_file_count += 1
                 if self.args.flag_print:
                     print(music_file)
-                if self.args.flag_capital:
-                    music_file.capitalize_tag()
-                if self.args.flag_brainz:
-                    music_file.sanitize_with_musicBrainz()
+                
+                #guess
+                if self.args.flag_path_guess:
+                    music_file.guess_path()
                 if self.args.flag_brainz_force:
                     music_file.guess_musicbrainz()
                 if self.args.flag_audio_guess:
                     music_file.guess_sound()
+                
+                #SANITIZING
+                if self.args.flag_capital:
+                    music_file.capitalize_tag()
+                if self.args.flag_brainz:
+                    music_file.sanitize_with_musicBrainz()
+                
+                #MOVING
                 if self.args.flag_move:
                     music_file.move_with_condition(self.args)
                 music_file.save()
@@ -95,7 +104,6 @@ class Params():
     @param an instance of the ArgumentParser class
     """
     def __init__(self, args):
-        print(args)
         self.directories = args.directories
         self.flag_count = args.c
         self.flag_print = args.p
@@ -103,6 +111,7 @@ class Params():
         self.flag_brainz = args.b
         self.flag_brainz_force = args.B
         self.flag_audio_guess = args.a
+        self.flag_path_guess = args.P
         #TODO
         self.flag_move = False
         #self.match = self.replace_match(args.m[0])
