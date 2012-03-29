@@ -11,6 +11,7 @@ from musicfile import NotAMusicFileException
 Directory walker, handle the creation of the musicfile classes instances
 """
 
+
 class MusicWalker(threading.Thread):
 
     """
@@ -21,7 +22,6 @@ class MusicWalker(threading.Thread):
         self.directories = args.directories
         self.args = args
         self.music_file_count = 0
-
 
     """
     launch the walker, create MusicFile instance accoring to their type
@@ -34,7 +34,7 @@ class MusicWalker(threading.Thread):
                 self.dir_parser(*e)
         if self.args.flag_count:
             print("There is : %i music files there" % self.music_file_count)
-    
+
     """
     parse the directory
     """
@@ -47,15 +47,16 @@ class MusicWalker(threading.Thread):
             except NotAMusicFileException:
                 logging.info("%s is not a music file" % abs_file_path)
                 continue
+
             #sanitize the file's tag according to the parameters stored
             #in flag
             if music_file:
-                if self.args.flag_count: #DONE
+                if self.args.flag_count:
                     self.music_file_count += 1
                 if self.args.flag_print:
-                    print(music_file) #DONE
+                    print(music_file)
                 if self.args.flag_capital:
-                    music_file.capitalize_tag() #DONE
+                    music_file.capitalize_tag()
                 if self.args.flag_brainz:
                     music_file.sanitize_with_musicBrainz()
                 if self.args.flag_brainz_force:
@@ -80,6 +81,8 @@ class MusicWalker(threading.Thread):
 Flag handler, rename the flag, create the matching pattern for the music
 file tags
 """
+
+
 class Params():
 
     """
@@ -105,7 +108,7 @@ class Params():
         #self.match = self.replace_match(args.m[0])
         if args.d == True:
             self.toggle_debug_mode()
-    
+
     """
     replace to match to a python expression
     Not safe for now
@@ -126,6 +129,8 @@ class Params():
 main
 handle the parsing of the argument and the first call to MusicWalker
 """
+
+
 def main():
     parser = argparse.ArgumentParser(description='Sort Music according \
     to id3 tags')
@@ -158,7 +163,7 @@ def main():
     clean_params = Params(args)
     t = MusicWalker(clean_params)
     t.run()
-    
+
 
 #MusicWalker(sys.argv[1], None).run()
 main()
