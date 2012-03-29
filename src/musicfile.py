@@ -7,6 +7,11 @@ import errno
 import logging
 from musicbrainz2.webservice import Query, TrackFilter, WebServiceError
 
+"""
+Exception launched if the music file is not a id3v2 tag
+"""
+
+
 class NotAMusicFileException(Exception):
     pass
 
@@ -14,6 +19,8 @@ class NotAMusicFileException(Exception):
 super class for all the music file of all type
 give the way to access in a simple fashion the tags
 """
+
+
 class MusicFile(object):
 
     """
@@ -43,7 +50,8 @@ class MusicFile(object):
         try:
             logging.debug(titleName)
             logging.debug(artistName)
-            f = TrackFilter(title=titleName, artistName=artistName, releaseTitle=albumName)
+            f = TrackFilter(title=titleName, artistName=artistName,
+            releaseTitle=albumName)
             results = q.getTracks(f)
         except WebServiceError as e:
             logging.debug(e)
@@ -51,8 +59,8 @@ class MusicFile(object):
             return
         if len(results) == 0:
             logging.debug("No result found")
-            return 
-            
+            return
+
         for result in results:
             logging.debug("A result was found")
             if result.score == 100:
@@ -62,7 +70,7 @@ class MusicFile(object):
                 if len(possible_releases) != 1:
                     logging.debug("Multiple album, I will try to guess")
                     #TODO
-                    
+                    return
                 else:
                     release = possible_releases[0].getTitle()
                 self.tags['title'] = track.title
@@ -70,6 +78,9 @@ class MusicFile(object):
                 self.tags['album'] = release
                 return
 
+    """
+    guess the non existing tag with musicBrainz
+    """
     def guess_musicbrainz(self):
         pass
 
@@ -78,12 +89,13 @@ class MusicFile(object):
     """
     def guess_sound(self):
         pass
-    
+
     """
+    guess the tags from the path
     """
     def guess_path(self):
         splitted_path = os.path.dirname(self.path)
-        
+
     #end of sanitizing methods
     """
     get the tag, the name of the tag must be in the value of USEFUL_TAG
@@ -110,7 +122,7 @@ class MusicFile(object):
     """
     def has_key(self, tag):
         return tag in self.tags
-    
+
     """
      print all tags that mutagen can find
      @param maximum length of all the content
@@ -120,7 +132,7 @@ class MusicFile(object):
         for k in self.tags.keys():
             ret += ["\t %s:%s" % (k, self.tags[k])]
         return "\n".join(ret)
-    
+
     """
     @return the path if the condition for the existence of the tags
             are fullfilled
@@ -130,6 +142,7 @@ class MusicFile(object):
         #test if all tags are defined for this element
         if condition:
             self.move(new_basedir, path_format)
+
     """
     move this music file in the good place
     """
@@ -143,7 +156,7 @@ class MusicFile(object):
         #extract the extension
         try:
             ext = self.get_extension()
-        except:#TODO specify
+        except:  # TODO specify
             logging.error("Moving file %s failed, extension is undefined"
             % self.path)
             return
@@ -168,18 +181,23 @@ class MusicFile(object):
     def capitalize_tag(self, tag=None):
         for tag in self.tags:
             self.tags[tag] = [string.capwords(i) for i in self.tags[tag]]
-    
+
     """
     save modification to the id3 tag
     """
     def save(self):
         self.tags.save()
 
+"""
+Emulate the mkdir -p command, create a directory and all it's children
+"""
+
+
 def mkdir_p(path):
     try:
         os.makedirs(path)
-    except OSError as e: # Python >2.5
+    except OSError as e:  # Python >2.5
         if e.errno == errno.EEXIST:
             pass
-        else: 
+        else:
             raise
