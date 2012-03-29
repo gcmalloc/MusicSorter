@@ -42,19 +42,7 @@ class MusicFile(object):
     @param function used to get the tags
     """
     def __init__(self, path):
-        try:
-            self.tags = EasyID3(path)
-        except ID3NoHeaderError:
-            try:
-                logging.debug("trying explicit flac")
-                help(FLAC)
-                self.tags = FLAC(path, ID3=EasyID3)
-            except FLACNoHeaderError:
-                try:
-                    logging.debug("trying explicit mp3")
-                    self.tags = MP3(path, ID3=EasyID3)
-                except FLACNoHeaderError:
-                    raise NotAMusicFileException
+        self.tags = mutagen.File(path, easy=True)
         self.path = path
 
     """
