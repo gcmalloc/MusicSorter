@@ -85,6 +85,7 @@ class MusicFile(object):
                 else:
                     release = possible_releases[0].getTitle()
                 logging.debug(dir(track))
+                logging.debug("tags are :" + str(track.getTags()))
                 self['title'] = track.title
                 self['artist'] = track.artist.name
                 self['album'] = release
@@ -105,12 +106,14 @@ class MusicFile(object):
         except:
             return
         for score, recording_id, title, artist in match:
-        #for e in acoustid.match(ACOUSTID_KEY, self.path):
             if score > 0.99:
-                #we are quite sure
+                #we are quite sure this result match
                 logging.debug("Match Found score:%s, title:%s, artist:%s", score, title, artist)
                 self['title'] = title
                 self['artist'] = artist
+            else:
+                #the result are not sure enough
+                logging.debug("the result doesn't seems sure enough.")
 
     """
     guess the tags from the path
@@ -222,11 +225,6 @@ class MusicFile(object):
     """
     def save(self):
         self.tags.save()
-
-
-class FlacFile(MusicFile):
-    def __init__(self):
-      self.tags = FLAC("example.flac")
 
 """
 Emulate the mkdir -p command, create a directory and all it's children
