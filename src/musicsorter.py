@@ -45,6 +45,9 @@ class MusicWalker(threading.Thread):
             except NotAMusicFileException:
                 logging.info("%s is not a music file" % abs_file_path)
                 continue
+            except IOError as e:
+                logging.info(e)
+                continue
 
             #sanitize the file's tag according to the parameters stored
             #in flag
@@ -58,8 +61,6 @@ class MusicWalker(threading.Thread):
                 #guess
                 if self.args.flag_path_guess:
                     music_file.guess_path()
-                if self.args.flag_brainz_force:
-                    music_file.guess_musicbrainz()
                 if self.args.flag_audio_guess:
                     music_file.guess_sound()
                 
@@ -72,6 +73,8 @@ class MusicWalker(threading.Thread):
                 #MOVING
                 if self.args.path:
                     music_file.move(self.args.path)
+                logging.debug("Will write the tags :")
+                logging.debug(music_file)
                 music_file.save()
 
 """

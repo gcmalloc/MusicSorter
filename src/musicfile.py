@@ -11,7 +11,6 @@ import os
 import errno
 import logging
 from musicbrainz2.webservice import Query, TrackFilter, WebServiceError
-import difflib
 import acoustid
 
 """
@@ -56,13 +55,12 @@ class MusicFile(object):
     just idea for the moment
     """
     def sanitize_with_musicBrainz(self):
-        titleName = self.tags['title']
-        artistName = self.tags['artist']
-        albumName = self.tags['album']
+        titleName = self['title']
+        artistName = self['artist']
+        albumName = self['album']
         q = Query()
         try:
-            logging.debug(titleName)
-            logging.debug(artistName)
+            logging.debug("Querying with {},{},{}".format(titleName, artistName, albumName))
             f = TrackFilter(title=titleName, artistName=artistName,
             releaseTitle=albumName)
             results = q.getTracks(f)
@@ -86,16 +84,11 @@ class MusicFile(object):
                     return
                 else:
                     release = possible_releases[0].getTitle()
-                self.tags['title'] = track.title
-                self.tags['artist'] = track.artist.name
-                self.tags['album'] = release
+                self['title'] = track.title
+                self['artist'] = track.artist.name
+                self['album'] = release
+                #self.tags['album'] = 
                 return
-
-    """
-    guess the non existing tag with musicBrainz
-    """
-    def guess_musicbrainz(self):
-        pass
 
     """
     guess the title from the sound using a sound
@@ -138,13 +131,14 @@ class MusicFile(object):
     """
     def __getitem__(self, key):
         try:
+            #return the first item as default
             tag = self.tags[key]
         except KeyError:
             return None
-        if not tag:
+        if not tag: #if tag is empty
             return None
         else:
-            return tag
+            return tag[0]
 
     """
     set the tag, the name of the tag must be in the value of USEFUL_TAG
@@ -152,8 +146,8 @@ class MusicFile(object):
     the new value of the tag
     """
     def __setitem__(self, key, value):
+        #set the tag without writing them
         self.tags[key] = str(value)
-        #write down the tags directly with mutagen
 
     def keys(self):
         return self.tags.keys()
