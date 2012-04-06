@@ -84,6 +84,7 @@ class MusicFile(object):
                     return
                 else:
                     release = possible_releases[0].getTitle()
+                logging.debug(dir(track))
                 self['title'] = track.title
                 self['artist'] = track.artist.name
                 self['album'] = release
@@ -108,8 +109,8 @@ class MusicFile(object):
             if score > 0.99:
                 #we are quite sure
                 logging.debug("Match Found score:%s, title:%s, artist:%s", score, title, artist)
-                self.tags['title'] = title
-                self.tags['artist'] = artist
+                self['title'] = title
+                self['artist'] = artist
 
     """
     guess the tags from the path
