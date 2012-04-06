@@ -4,7 +4,7 @@ from mutagen.flac import FLACNoHeaderError
 from mutagen.flac import FLAC
 from mutagen.apev2 import APEv2
 from mutagen.mp3 import MP3
-
+import mutagen
 
 import string
 import os
@@ -42,7 +42,13 @@ class MusicFile(object):
     @param function used to get the tags
     """
     def __init__(self, path):
-        self.tags = mutagen.File(path, easy=True)
+        try:
+            self.tags = EasyID3(path)
+        except ID3NoHeaderError:
+            try:
+                self.tags = FLAC(path)
+            except FLACNoHeaderError:
+                raise NotAMusicFileException
         self.path = path
 
     """
@@ -100,7 +106,11 @@ class MusicFile(object):
             return
         logging.debug(self.path)
         logging.debug(ACOUSTID_KEY)
-        for score, recording_id, title, artist in acoustid.match(ACOUSTID_KEY, self.path):
+        try:
+            match = acoustid.match(ACOUSTID_KEY, self.path)
+        except:
+            return
+        for score, recording_id, title, artist in match:
         #for e in acoustid.match(ACOUSTID_KEY, self.path):
             if score > 0.99:
                 #we are quite sure
@@ -171,9 +181,8 @@ class MusicFile(object):
     """
     def move_with_condition(self, condition, new_basedir, path_format):
         #test if all tags are defined for this element
-        if condition:
-            self.move(new_basedir, path_format)
-
+        pass
+    
     """
     move this music file in the good place
     """

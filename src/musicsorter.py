@@ -28,12 +28,10 @@ class MusicWalker(threading.Thread):
     then handle
     """
     def run(self):
-        print("launch")
+        print("Music Sorter is launched")
         for directory in self.directories:
             for e in os.walk(directory, self.dir_parser):
                 self.dir_parser(*e)
-        if self.args.flag_count:
-            print("There is : %i music files there" % self.music_file_count)
 
     """
     parse the directory
@@ -72,19 +70,9 @@ class MusicWalker(threading.Thread):
                     music_file.sanitize_with_musicBrainz()
                 
                 #MOVING
-                if self.args.flag_move:
-                    music_file.move_with_condition(self.args)
+                if self.args.path:
+                    music_file.move(self.args.path)
                 music_file.save()
-    #"""
-    #Wrapper around the magic module to handle audio file only.
-    #@param the absolute path to the file we want to analyse
-    #@return None if the mime_type s not in the MUSIC_TYPES dict.
-    #"""
-    #@staticmethod
-    #def get_type(music_file):
-        #mime_type = magic(music_file, mime=True)
-        #music_type = self.MUSIC_TYPES.get(mime_type)
-        #return music_type
 
 """
 Flag handler, rename the flag, create the matching pattern for the music
@@ -93,12 +81,7 @@ file tags
 
 
 class Params():
-
-    """
-    Separator for the match
-    """
-    MATCH_SEPARATOR = ","
-
+    
     """
     init function
     @param an instance of the ArgumentParser class
@@ -112,8 +95,10 @@ class Params():
         self.flag_brainz_force = args.B
         self.flag_audio_guess = args.a
         self.flag_path_guess = args.P
-        #TODO
-        self.flag_move = False
+        if args.m:
+            self.path = args.path
+        else:
+            self.path = None
         #self.match = self.replace_match(args.m[0])
         if args.d == True:
             self.toggle_debug_mode()
@@ -157,10 +142,9 @@ def main():
     help="Use music Brainz database to try to guess non existing tags")
     parser.add_argument('-a', action="store_true", default=False, \
     help="Use the audio print of file to guess the uncomplete tag")
-    parser.add_argument('-m', action="store", metavar="conditions", \
-    type=str, nargs=1, help="File descriptor, ban be list of matching \
-    argument separeted by & and |, for respectively and and or. the \
-    arguments are in the list of argument")
+    parser.add_argument('-m', action="store", metavar="path", \
+    type=str, nargs=1, help="move the music file to the predifined path\
+    which use format ")
     parser.add_argument('-d', action="store_true", default=False, \
     help="Toggle debug mode")
     #parser.add_argument('-s', metavar="location", \
