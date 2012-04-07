@@ -5,6 +5,8 @@ from mutagen.flac import FLAC
 from mutagen.apev2 import APEv2
 from mutagen.mp3 import MP3
 import mutagen
+from urllib2 import HTTPError
+from time import sleep
 
 import string
 import os
@@ -60,18 +62,29 @@ class MusicFile(object):
         albumName = self['album']
         q = Query()
         try:
-            logging.debug("Querying with {},{},{}".format(titleName, artistName, albumName))
+            logging.debug("Querying with title:{},artist:{},album:{}".format(titleName, artistName, albumName))
             f = TrackFilter(title=titleName, artistName=artistName,
-            releaseTitle=albumName)
+            releaseTitle = albumName, limit=2)
             results = q.getTracks(f)
+            logging.debug("results are " + str(results))
         except WebServiceError as e:
-            logging.debug(e)
             logging.error("Failed to contact musicbrainz server.")
-            return
+            if str(e)[:15]=="HTTP Error 503:":
+                logging.info("Pausing for a moment, the musicbrainz server doesn't handle too much request")
+                sleep(60)
+            return self.sanitize_with_musicBrainz()
+        self.treat_musicbrainz_result(results)
+    
+    """
+    A simple way to sort the results obtain by a query to the musicbrainz
+    database and put them into the correct tag
+    @return True if the results can be put into the corresponding tag
+            False otherwise
+    """
+    def treat_musicbrainz_result(self, results):
         if len(results) == 0:
             logging.debug("No result found")
             return
-
         for result in results:
             logging.debug("A result was found")
             if result.score == 100:
@@ -81,11 +94,12 @@ class MusicFile(object):
                 if len(possible_releases) != 1:
                     logging.debug("Multiple album, I will try to guess")
                     #TODO
-                    return
+                    return False
                 else:
                     release = possible_releases[0].getTitle()
                 logging.debug(dir(track))
                 logging.debug("tags are :" + str(track.getTags()))
+                dir(track)
                 self['title'] = track.title
                 self['artist'] = track.artist.name
                 self['album'] = release
@@ -240,7 +254,10 @@ def mkdir_p(path):
         else:
             raise
 
-
+"""
+A little test for path cleaning to extract information from the path of
+the music file
+"""
 def path_split(path, depth=3):
     split_path = []
     for i in range(depth + 1):
