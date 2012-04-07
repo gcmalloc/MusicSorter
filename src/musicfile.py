@@ -16,7 +16,7 @@ from musicbrainz2.webservice import Query, TrackFilter, WebServiceError
 import acoustid
 
 """
-The acoustid api kay to access the database.
+The acoustid api key to access the database.
 """
 
 ACOUSTID_KEY = "jwsxE9b6"
@@ -75,6 +75,7 @@ class MusicFile(object):
             return self.sanitize_with_musicBrainz()
         self.treat_musicbrainz_result(results)
     
+    
     """
     A simple way to sort the results obtain by a query to the musicbrainz
     database and put them into the correct tag
@@ -84,7 +85,7 @@ class MusicFile(object):
     def treat_musicbrainz_result(self, results):
         if len(results) == 0:
             logging.debug("No result found")
-            return
+            return False
         for result in results:
             logging.debug("A result was found")
             if result.score == 100:
@@ -93,21 +94,25 @@ class MusicFile(object):
                 possible_releases = track.getReleases()
                 if len(possible_releases) != 1:
                     logging.debug("Multiple album, I will try to guess")
-                    #TODO
+                    for rel in possible_releases:
+                        print(dir(rel))
+                        exit(0)
                     return False
                 else:
-                    release = possible_releases[0].getTitle()
+                    release = possible_releases[0]
                 logging.debug(dir(track))
                 logging.debug("tags are :" + str(track.getTags()))
                 dir(track)
                 self['title'] = track.title
                 self['artist'] = track.artist.name
-                self['album'] = release
+                self['album'] = release.getTitle()
                 #self.tags['album'] = 
                 return
-
+    
+    
     """
-    guess the title from the sound using a sound
+    guess the title from the sound using the sound fingerprint
+    using acoustID api
     """
     def guess_sound(self):
         if self.has_key('title') and self.has_key('artist'):
