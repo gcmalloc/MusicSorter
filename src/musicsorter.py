@@ -112,17 +112,6 @@ class Params():
             self.toggle_debug_mode()
 
     """
-    replace to match to a python expression
-    Not safe for now
-    @return an array of tag that must be in the expression
-    """
-    def replace_match(self, match):
-        matching_values = match.split(Params.MATCH_SEPARATOR)
-        #ignore trailing spaces
-        matching_values = [i.strip() for i in matching_values]
-        return match
-
-    """
     toggle the debug mode
     """
     def toggle_debug_mode(self):
