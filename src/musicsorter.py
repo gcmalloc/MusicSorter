@@ -6,7 +6,7 @@ import logging
 
 from musicfile import MusicFile
 from musicfile import NotAMusicFileException
-
+from musicfilecluster import MusicFileCluster
 """
 Directory walker, handle the creation of the musicfile classes instances
 """
@@ -37,11 +37,14 @@ class MusicWalker(threading.Thread):
     parse the directory
     """
     def dir_parser(self, dirpath, dirnames, filenames):
+        #we create a cluster from the directory
+        cluster = MusicFileCluster(dirpath)
         for f in filenames:
             logging.debug(f)
             abs_file_path = os.path.join(dirpath, f)
             try:
                 music_file = MusicFile(abs_file_path)
+                cluster.add(music_file)
             except NotAMusicFileException:
                 logging.info("%s is not a music file" % abs_file_path)
                 continue
@@ -52,7 +55,7 @@ class MusicWalker(threading.Thread):
             #sanitize the file's tag according to the parameters stored
             #in flag
             if music_file:
-                #STATS
+                #General stats
                 if self.args.flag_count:
                     self.music_file_count += 1
                 if self.args.flag_print:
@@ -64,18 +67,20 @@ class MusicWalker(threading.Thread):
                 if self.args.flag_audio_guess:
                     music_file.guess_sound()
                 
-                #SANITIZING
+                #Sanitizing
                 if self.args.flag_capital:
                     music_file.capitalize_tag()
                 if self.args.flag_brainz:
                     music_file.sanitize_with_musicBrainz()
                 
+                #write the tag for good
+                logging.debug("Will write the following tags :")
+                logging.debug(music_file)
+                music_file.save()
+                
                 #MOVING
                 if self.args.path:
                     music_file.move(self.args.path)
-                logging.debug("Will write the tags :")
-                logging.debug(music_file)
-                music_file.save()
 
 """
 Flag handler, rename the flag, create the matching pattern for the music

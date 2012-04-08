@@ -138,13 +138,18 @@ class MusicFile(object):
     guess the tags from the path
     """
     def guess_path(self):
+        if self['artist'] and self['album'] and self['title']:
+            logging.debug("Cannot guess any further with only the title")
+            return
         #let's try to find album name or artist name from the path, if it's not already set
         clean_path = path_split(self.path)
         logging.debug("Trying to guess on %s" % str(clean_path))
         logging.debug("Clean title:%s" % clean_title(clean_path[-1]))
         #try to guess the album if not already set
         if not self['title']: #our worst case
-            clean_path[-1]
+            #we remove all trailing number and trailing '-' and the extension and try to find it in our database
+            possible_title = 
+            logging.debug("Title could be {}".format(possible_title))
 
     #end of sanitizing methods
     """
@@ -190,21 +195,12 @@ class MusicFile(object):
         for k in self.tags.keys():
             ret += ["\t %s:%s" % (k, self[k])]
         return "\n".join(ret)
-
-    """
-    @return the path if the condition for the existence of the tags
-            are fullfilled
-            None otherwise
-    """
-    def move_with_condition(self, condition, new_basedir, path_format):
-        #test if all tags are defined for this element
-        pass
     
     """
     move this music file in the good place
     """
     def move(self, new_basedir, path_format):
-        formatted_path = path_format.format(self.tags)
+        formatted_path = path_format.format(**self.tags)
         new_dir = os.join(new_basedir, formatted_path)
         try:
             mkdir_p(new_dir)
@@ -213,7 +209,7 @@ class MusicFile(object):
         #extract the extension
         try:
             ext = self.get_extension()
-        except:  # TODO specify
+        except:  # TODO specify error
             logging.error("Moving file %s failed, extension is undefined"
             % self.path)
             return
@@ -262,12 +258,23 @@ def mkdir_p(path):
 """
 A little test for path cleaning to extract information from the path of
 the music file
+    Artist
+
+    Album
+
+    Listitem
+
+    Track No
+
+    Characters to separate the fields
+
+    File Type (e.g.mp3)
 """
 def path_split(path, depth=3):
     split_path = []
     for i in range(depth + 1):
         path = os.path.split(path)
-        split_path = [path[1]] + split_path
+        split_path = [path[1].replace("_", " ")] + split_path
         path = path[0]
     return split_path[1:]
 
