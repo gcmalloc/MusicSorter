@@ -10,6 +10,8 @@ def need_last_fm_support(f):
             f()
         else:
             logging.error("no last fm support")
+    return wrapper
+
 """
 Implementation of a MusicFileCluster. This is a representation of music
 that belong to the same directory. This permit to take in consideration
@@ -55,7 +57,8 @@ def disc_idmp3(cd):
         try:
             audioFile = eyeD3.Mp3AudioFile(cd[i-1]) #read the music file
         except eyeD3.tag.TagException, value:
-            print avkutil.color(value,'lred')
+            logging.error("cannot get length")
+            #print avkutil.color(value,'lred')
         br = audioFile.getBitRate() #bitrate
         pt = audioFile.getPlayTimeString()#number o  time the music is playeds
         ms = audioFile.playTime * 1000 #playtime in milisecond
@@ -72,7 +75,7 @@ def disc_idmp3(cd):
     ms = audioFile.playTime * 1000
     ms = ms + adjust
     cdtime = cdtime + ms
-    (min, sec, frame) = (cdtime/60000,(cdtime%60000)/1000, (((cdtime%60000)%1000)*75)/1000 )
+    (min, sec, frame) = (cdtime/60000,(cdtime % 60000) / 1000, ((( cdtime % 60000) % 1000) * 75) / 1000 )
     track_frames.append(min*60*75 + sec*75 + frame)
 
     total_time = (track_frames[-1] / 75) - (track_frames[0] / 75)
@@ -88,7 +91,7 @@ def disc_idmp3(cd):
     return [discid, last] + track_frames[:-1] + [ track_frames[-1] / 75 ]
 
 
-    @last_fm_support
+    @need_last_fm_support
     def guess_from_name(self):
         clean_dirname = self.abs_dirname.strip(string.digits)
         #let's do a little search 

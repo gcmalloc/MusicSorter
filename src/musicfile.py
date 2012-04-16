@@ -244,6 +244,15 @@ class MusicFile(object):
     def save(self):
         self.tags.save()
 
+    """
+    Get the length of the tack in milisecond
+    """
+    def __len__(self):
+        return int(self.tags.info.length)
+        
+    def bitrate(self):
+        return 
+    
 """
 Emulate the mkdir -p command, create a directory and all it's children
 """
