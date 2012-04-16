@@ -60,24 +60,24 @@ class MusicWalker(threading.Thread):
                     self.music_file_count += 1
                 if self.args.flag_print:
                     print(music_file)
-                
+
                 #guess
                 if self.args.flag_path_guess:
                     music_file.guess_path()
                 if self.args.flag_audio_guess:
                     music_file.guess_sound()
-                
+
                 #Sanitizing
                 if self.args.flag_capital:
                     music_file.capitalize_tag()
                 if self.args.flag_brainz:
                     music_file.sanitize_with_musicBrainz()
-                
+
                 #write the tag for good
                 logging.debug("Will write the following tags :")
                 logging.debug(music_file)
                 music_file.save()
-                
+
                 #MOVING
                 if self.args.path:
                     music_file.move(self.args.path)
@@ -89,7 +89,7 @@ file tags
 
 
 class Params():
-    
+
     """
     init function
     @param an instance of the ArgumentParser class

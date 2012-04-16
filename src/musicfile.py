@@ -36,12 +36,13 @@ give the way to access in a simple fashion the tags
 
 
 class MusicFile(object):
-    
+
     """
     initialisation function
-    @param path:
-    @param function used to get the tags
+    @param the absolute path of the file
+    @raise A NotAMusicFileException if the file cannot be read as a musicFile
     """
+
     def __init__(self, path):
         try:
             self.tags = EasyID3(path)
@@ -62,20 +63,21 @@ class MusicFile(object):
         albumName = self['album']
         q = Query()
         try:
-            logging.debug("Querying with title:{},artist:{},album:{}".format(titleName, artistName, albumName))
+            logging.debug("Querying with title:{},artist:{},album:{}"
+            .format(titleName, artistName, albumName))
             f = TrackFilter(title=titleName, artistName=artistName,
-            releaseTitle = albumName, limit=2)
+            releaseTitle=albumName, limit=2)
             results = q.getTracks(f)
             logging.debug("results are " + str(results))
         except WebServiceError as e:
             logging.error("Failed to contact musicbrainz server.")
             if str(e)[:15]=="HTTP Error 503:":
-                logging.info("Pausing for a moment, the musicbrainz server doesn't handle too much request")
+                logging.info("Pausing for a moment, \
+                the musicbrainz server doesn't handle too much request")
                 sleep(60)
             return self.sanitize_with_musicBrainz()
         self.treat_musicbrainz_result(results)
-    
-    
+
     """
     A simple way to sort the results obtain by a query to the musicbrainz
     database and put them into the correct tag
@@ -106,16 +108,15 @@ class MusicFile(object):
                 self['title'] = track.title
                 self['artist'] = track.artist.name
                 self['album'] = release.getTitle()
-                #self.tags['album'] = 
+                #self.tags['album'] =
                 return
-    
-    
+
     """
     guess the title from the sound using the sound fingerprint
     using acoustID api
     """
     def guess_sound(self):
-        if self.has_key('title') and self.has_key('artist'):
+        if 'title' in self and 'artist' in self:
             logging.debug("We already have title and artist for this one")
             return
         logging.debug(self.path)
@@ -127,12 +128,13 @@ class MusicFile(object):
         for score, recording_id, title, artist in match:
             if score > 0.99:
                 #we are quite sure this result match
-                logging.debug("Match Found score:%s, title:%s, artist:%s", score, title, artist)
+                logging.debug("Match Found score:%s, title:%s, artist:%s",
+                score, title, artist)
                 self['title'] = title
                 self['artist'] = artist
             else:
                 #the result are not sure enough
-                logging.debug("the result doesn't seems sure enough.")
+                logging.debug("The result doesn't seems sure enough.")
 
     """
     guess the tags from the path
@@ -141,17 +143,18 @@ class MusicFile(object):
         if self['artist'] and self['album'] and self['title']:
             logging.debug("Cannot guess any further with only the title")
             return
-        #let's try to find album name or artist name from the path, if it's not already set
+        #let's try to find album name or artist name from the path, if it's
+        #not already set
         clean_path = path_split(self.path)
         logging.debug("Trying to guess on %s" % str(clean_path))
         logging.debug("Clean title:%s" % clean_title(clean_path[-1]))
         #try to guess the album if not already set
-        if not self['title']: #our worst case
-            #we remove all trailing number and trailing '-' and the extension and try to find it in our database
-            possible_title = 
+        if not self['title']:  # Our worst case
+            #we remove all trailing number, trailing '-'
+            #and the extension and try to find it in our database
+            possible_title = clean_path[-1]
             logging.debug("Title could be {}".format(possible_title))
 
-    #end of sanitizing methods
     """
     get the tag, the name of the tag must be in the value of USEFUL_TAG
     @param the name of the tag
@@ -163,7 +166,7 @@ class MusicFile(object):
             tag = self.tags[key]
         except KeyError:
             return None
-        if not tag: #if tag is empty
+        if not tag:  # if tag is empty
             return None
         else:
             return tag[0]
@@ -187,15 +190,15 @@ class MusicFile(object):
         return tag in self.tags
 
     """
-     print all tags that mutagen can find
-     @param maximum length of all the content
+    print all tags that mutagen can find
+    @param maximum length of all the content
     """
     def __str__(self, maxsize=100):
         ret = [self.path]
         for k in self.tags.keys():
             ret += ["\t %s:%s" % (k, self[k])]
         return "\n".join(ret)
-    
+
     """
     move this music file in the good place
     """
@@ -270,6 +273,8 @@ the music file
 
     File Type (e.g.mp3)
 """
+
+
 def path_split(path, depth=3):
     split_path = []
     for i in range(depth + 1):
@@ -277,6 +282,11 @@ def path_split(path, depth=3):
         split_path = [path[1].replace("_", " ")] + split_path
         path = path[0]
     return split_path[1:]
+
+"""
+clean a title
+"""
+
 
 def clean_title(title):
     return os.path.splitext(title)[0].strip(string.digits + '- ')
