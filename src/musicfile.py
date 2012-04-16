@@ -34,7 +34,6 @@ super class for all the music file of all type
 give the way to access in a simple fashion the tags
 """
 
-
 class MusicFile(object):
 
     """
@@ -45,12 +44,19 @@ class MusicFile(object):
 
     def __init__(self, path):
         try:
-            self.tags = EasyID3(path)
-        except ID3NoHeaderError:
+            logging.debug("Trying mp3")
+            self.tags = MP3(path, ID3=EasyID3)
+            #self.tags = EasyID3(path)
+        except mutagen.mp3.HeaderNotFoundError:
             try:
+                logging.debug("Trying flac")
                 self.tags = FLAC(path)
             except FLACNoHeaderError:
-                raise NotAMusicFileException
+                try:
+                    logging.debug("Trying general")
+                    self.tags = EasyID3(path)
+                except ID3NoHeaderError:
+                    raise NotAMusicFileException
         self.path = path
 
     """
@@ -243,16 +249,19 @@ class MusicFile(object):
     """
     def save(self):
         self.tags.save()
-
-    """
-    Get the length of the tack in milisecond
-    """
-    def __len__(self):
-        return int(self.tags.info.length)
-        
-    def bitrate(self):
-        return 
     
+    """
+    Get the length of the track in milisecond
+    """
+    def length(self):
+        return int(self.tags.info.length)
+    
+    """
+    Get the bitrate of the track
+    """
+    def bitrate(self):
+        return int(self.tags.info.bitrate)
+
 """
 Emulate the mkdir -p command, create a directory and all it's children
 """

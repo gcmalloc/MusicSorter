@@ -66,17 +66,24 @@ class MusicWalker(threading.Thread):
                     music_file.guess_path()
                 if self.args.flag_audio_guess:
                     music_file.guess_sound()
-
+                
                 #Sanitizing
                 if self.args.flag_capital:
                     music_file.capitalize_tag()
                 if self.args.flag_brainz:
                     music_file.sanitize_with_musicBrainz()
-
+            
+            #clustering
+            logging.debug(cluster)
+            if self.args.flag_cddb:
+                cluster.disc_idmp3()
+            
+            for f in filenames:
                 #write the tag for good
                 logging.debug("Will write the following tags :")
                 logging.debug(music_file)
-                music_file.save()
+                if not self.args.flag_soft:
+                    music_file.save()
 
                 #MOVING
                 if self.args.path:
@@ -103,6 +110,8 @@ class Params():
         self.flag_brainz_force = args.B
         self.flag_audio_guess = args.a
         self.flag_path_guess = args.P
+        self.flag_cddb = args.D
+        self.flag_soft = args.s
         if args.m:
             self.path = args.path
         else:
@@ -133,6 +142,8 @@ def main():
     help="Use the path of the file to try to guess non existing tags")
     parser.add_argument('-C', action="store_true", default=False, \
     help="Capitalize each word in all the tags")
+    parser.add_argument('-D', action="store_true", default=False, \
+    help="Use CDDB database and discid to guess non existing tags")
     parser.add_argument('-b', action="store_true", default=False, \
     help="Use music Brainz database to correct existing tags")
     parser.add_argument('-B', action="store_true", default=False, \
@@ -142,6 +153,8 @@ def main():
     parser.add_argument('-m', action="store", metavar="path", \
     type=str, nargs=1, help="move the music file to the predifined path\
     which use format ")
+    parser.add_argument('-s', action="store_true", default=False, \
+    help="Toggle soft mode, don't do any actual changes")
     parser.add_argument('-d', action="store_true", default=False, \
     help="Toggle debug mode")
     #parser.add_argument('-s', metavar="location", \
