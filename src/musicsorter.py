@@ -7,7 +7,6 @@ import logging
 from musicfile import MusicFile
 from musicfile import NotAMusicFileException
 from musicfilecluster import MusicFileCluster
-import musicfilecluster
 
 """
 Directory walker, handle the creation of the musicfile classes instances
@@ -81,6 +80,9 @@ class MusicWalker(threading.Thread):
             cluster.compute_discid()
             print cluster.disc_id
             print(cluster.search())
+            print(cluster.search())
+            print(cluster.getResult(cluster.abs_dirname))
+
             #print(cluster.getResult())
         
         for f in filenames:

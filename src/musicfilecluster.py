@@ -1,6 +1,7 @@
 import logging
 import re, urllib
 import eyeD3
+import os
 try:
     import lastfm
     last_fm_support = True
@@ -46,34 +47,45 @@ class MusicFileCluster(object):
             self.num_files = len(self.musicFiles)
             sorted_musicFiles = sorted(self.musicFiles, key=lambda k:k.path)
             for f in sorted_musicFiles:
-                mp3 = eyeD3.Mp3AudioFile(f.path)
+                playTime = f.length()
                 self.total_frames = self.total_frames + str(self.total_time * 75) + " "
-                self.total_time += int(mp3.getPlayTime())
-                n += self.cddb_sum(int(mp3.getPlayTime()))
+                self.total_time += playTime
+                n += MusicFileCluster.cddb_sum(playTime)
             tmp = ((long(n) % 0xFF) << 24 | self.total_time << 8 | self.num_files)
             self.disc_id = '%08lx' % tmp
-
-    def cddb_sum(self, n):
+    
+    
+    @staticmethod
+    def cddb_sum(n):
         ret = 0
         while n > 0:
             ret = ret + (n % 10)
             n = n / 10
         return ret
 
+    def guess_with_cddb(self):
+        if not self.disc_id:
+            self.compute_discid()
+        logging.debug("guessing cddb with id " + self.disc_id)
+        self.search()
+
     def search(self):
         searchstring = self.disc_id + " " + str(self.num_files) + " " + self.total_frames + str(self.total_time)
-        print searchstring
-        print "total frames " + self.total_frames
+        logging.debug("searching with {}".format(searchstring))
+        logging.debug("total frames " + self.total_frames)
         searchstring = searchstring.replace(' ', '+')
         results = urllib.urlopen('http://freedb.freedb.org/~cddb/cddb.cgi?cmd=cddb+query+' + searchstring + '&hello=cddbsearch+localhost+xmcd+2.1&proto=6')
-        result = results.readlines()[1:-1]
-        f = []
-        for i in result:
-            genre = i.split(' ')[0]
-            cddbid = i.split(' ')[1]
-            title = ' '.join(i.split(' ')[2:]).rstrip("\r\n")
-            f.append({'genre':genre,'cddbid':cddbid,'title':title})
-        return f
+        tags = []
+        for raw_line in results.readlines()[1:-1]:
+            line = raw_line.split(' ')
+            genre = line[0]
+            cddbid = line[1]
+            #title = line[2:].split("/")[0]
+            title = ' '.join(line[2:]).split("/")
+            artist = title[0].strip()
+            track = title[1].strip()
+            tags.append({'genre':genre, 'cddbid':cddbid, 'title':track, 'artist':artist})
+        return tags
 
     def getResult(self, genre, cddbid):
         tracknames = []
@@ -92,15 +104,8 @@ class MusicFileCluster(object):
         clean_dirname = self.abs_dirname.strip(string.digits)
         #let's do a little search to see if we can find information 
         #based on the directory name
+        
     
-    def getResult(self, genre, cddbid):
-        tracknames = []
-        searchstring = genre + " " + cddbid
-        searchstring = searchstring.replace(' ', '+')
-        results = urllib.urlopen('http://freedb.freedb.org/~cddb/cddb.cgi?cmd=cddb+read+' + searchstring + '&hello=cddbsearch+localhost+xmcd+2.1&proto=6')
-        if results:
-            for line in results:
-                if re.match(r'^TTITLE',line):
-                    trackname = re.sub(r'^TTITLE\d+=','',line)
-                    tracknames.append(trackname.rstrip("\n"))
-        return tracknames
+    def general_search(self, searchString):
+        officialfm.album()
+        return ''

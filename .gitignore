@@ -1,2 +1,4 @@
 *.pyc
 __pycache__
+python-lastfm-read-only
+*.mp3
