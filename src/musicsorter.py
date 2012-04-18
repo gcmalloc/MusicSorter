@@ -79,13 +79,14 @@ class MusicWalker(threading.Thread):
         logging.debug(cluster)
         if self.args.flag_cddb:
             cluster.compute_discid()
-            cluster.search()
-            print(cluster.getResult())
+            print cluster.disc_id
+            print(cluster.search())
+            #print(cluster.getResult())
         
         for f in filenames:
             #write the tag for good
             logging.debug("Will write the following tags :")
-            logging.debug(music_file)
+            logging.debug(f)
             if not self.args.flag_soft:
                 music_file.save()
 

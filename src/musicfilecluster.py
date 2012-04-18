@@ -1,5 +1,6 @@
 import logging
 import re, urllib
+import eyeD3
 try:
     import lastfm
     last_fm_support = True
@@ -31,27 +32,25 @@ class MusicFileCluster(object):
         for i in musicFile:
             self.musicFile.append(i)
         self.abs_dirname = abs_dirname
+        self.total_time = 0
+        self.total_frames = ''
 
     def add(self, musicFile):
         self.musicFiles.append(musicFile)
         
     def __str__(self):
         return "Cluster is { \n" + "\n    ".join([str(mus.path) for mus in self.musicFiles]) + "\n}"
-
+    
     def compute_discid(self):
-        n = 0
-        self.total_frames = ''
-        self.total_time = 0
-        self.num_files = 0
-        for music_file in self.musicFiles:
-                playtime = music_file.length()
-                #mp3 = eyeD3.Mp3AudioFile(music_file.path)
-                #print(mp3.getPlayTime(), music_file.length())
+            n = 0
+            self.num_files = len(self.musicFiles)
+            for f in self.musicFiles:
+                mp3 = eyeD3.Mp3AudioFile(f.path)
                 self.total_frames = self.total_frames + str(self.total_time * 75) + " "
-                self.total_time += int(playtime)
-                n += self.cddb_sum(int(playtime))
-        tmp = ((long(n) % 0xFF) << 24 | self.total_time << 8 | self.num_files)
-        self.disc_id = '%08lx' % tmp
+                self.total_time += int(mp3.getPlayTime())
+                n += self.cddb_sum(int(mp3.getPlayTime()))
+            tmp = ((long(n) % 0xFF) << 24 | self.total_time << 8 | self.num_files)
+            self.disc_id = '%08lx' % tmp
 
     def cddb_sum(self, n):
         ret = 0
@@ -88,7 +87,8 @@ class MusicFileCluster(object):
     @need_last_fm_support
     def guess_from_name(self):
         clean_dirname = self.abs_dirname.strip(string.digits)
-        #let's do a little search
+        #let's do a little search to see if we can find information 
+        #based on the directory name
     
     def getResult(self, genre, cddbid):
         tracknames = []
