@@ -44,7 +44,8 @@ class MusicFileCluster(object):
     def compute_discid(self):
             n = 0
             self.num_files = len(self.musicFiles)
-            for f in self.musicFiles:
+            sorted_musicFiles = sorted(self.musicFiles, key=lambda k:k.path)
+            for f in sorted_musicFiles:
                 mp3 = eyeD3.Mp3AudioFile(f.path)
                 self.total_frames = self.total_frames + str(self.total_time * 75) + " "
                 self.total_time += int(mp3.getPlayTime())
@@ -61,6 +62,8 @@ class MusicFileCluster(object):
 
     def search(self):
         searchstring = self.disc_id + " " + str(self.num_files) + " " + self.total_frames + str(self.total_time)
+        print searchstring
+        print "total frames " + self.total_frames
         searchstring = searchstring.replace(' ', '+')
         results = urllib.urlopen('http://freedb.freedb.org/~cddb/cddb.cgi?cmd=cddb+query+' + searchstring + '&hello=cddbsearch+localhost+xmcd+2.1&proto=6')
         result = results.readlines()[1:-1]
