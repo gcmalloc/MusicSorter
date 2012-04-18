@@ -7,6 +7,8 @@ import logging
 from musicfile import MusicFile
 from musicfile import NotAMusicFileException
 from musicfilecluster import MusicFileCluster
+import musicfilecluster
+
 """
 Directory walker, handle the creation of the musicfile classes instances
 """
@@ -73,21 +75,23 @@ class MusicWalker(threading.Thread):
                 if self.args.flag_brainz:
                     music_file.sanitize_with_musicBrainz()
             
-            #clustering
-            logging.debug(cluster)
-            if self.args.flag_cddb:
-                cluster.disc_idmp3()
-            
-            for f in filenames:
-                #write the tag for good
-                logging.debug("Will write the following tags :")
-                logging.debug(music_file)
-                if not self.args.flag_soft:
-                    music_file.save()
+        #clustering
+        logging.debug(cluster)
+        if self.args.flag_cddb:
+            cluster.compute_discid()
+            cluster.search()
+            print(cluster.getResult())
+        
+        for f in filenames:
+            #write the tag for good
+            logging.debug("Will write the following tags :")
+            logging.debug(music_file)
+            if not self.args.flag_soft:
+                music_file.save()
 
-                #MOVING
-                if self.args.path:
-                    music_file.move(self.args.path)
+            #MOVING
+            if self.args.path:
+                music_file.move(self.args.path)
 
 """
 Flag handler, rename the flag, create the matching pattern for the music
