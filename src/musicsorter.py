@@ -81,7 +81,7 @@ class MusicWalker(threading.Thread):
             print cluster.disc_id
             print(cluster.search())
             print(cluster.search())
-            print(cluster.getResult(cluster.abs_dirname))
+            print(cluster.general_search("song for people"))
 
             #print(cluster.getResult())
         
