@@ -25,21 +25,21 @@ class MusicWalker(threading.Thread):
         self.music_file_count = 0
 
     """
-    launch the walker, create MusicFile instance accoring to their type
+    Launch the walker, create MusicFile instance accoring to their type
     then handle
     """
     def run(self):
         print("Music Sorter is launched")
         for directory in self.directories:
             for e in os.walk(directory, self.dir_parser):
-                self.dir_parser(*e)
+                self.dir_parser(*e, base_dir=directory)
 
     """
-    parse the directory
+    Parse the directory with the given parameter
     """
-    def dir_parser(self, dirpath, dirnames, filenames):
+    def dir_parser(self, dirpath, dirnames, filenames, base_dir):
         #we create a cluster from the directory
-        cluster = MusicFileCluster(dirpath)
+        cluster = MusicFileCluster(os.path.relpath(dirpath, base_dir))
         for f in filenames:
             logging.debug(f)
             abs_file_path = os.path.join(dirpath, f)
@@ -67,24 +67,20 @@ class MusicWalker(threading.Thread):
                     music_file.guess_path()
                 if self.args.flag_audio_guess:
                     music_file.guess_sound()
-                
+
                 #Sanitizing
                 if self.args.flag_capital:
                     music_file.capitalize_tag()
                 if self.args.flag_brainz:
                     music_file.sanitize_with_musicBrainz()
-            
+
         #clustering
         logging.debug(cluster)
-        if self.args.flag_cddb:
-            cluster.compute_discid()
-            print cluster.disc_id
-            print(cluster.search())
-            print(cluster.search())
-            print(cluster.general_search("song for people"))
+        if self.args.flag_cdid:
+            cluster.guess_with_cdid()
+        if self.args.flag_path_guess:
+            cluster.guess_from_directory()
 
-            #print(cluster.getResult())
-        
         for f in filenames:
             #write the tag for good
             logging.debug("Will write the following tags :")
@@ -95,6 +91,31 @@ class MusicWalker(threading.Thread):
             #MOVING
             if self.args.path:
                 music_file.move(self.args.path)
+
+    """
+    Parse the directory, try to guess the name of every tag it can find
+    """
+    def dir_parser_auto(self, dirpath, dirnames, filenames, base_dir):
+        #at first create an empty cluster
+    cluster = MusicFileCluster(os.path.relpath(dirpath, base_dir))
+    #find all the music file in the directory
+    for file_path in filenames:
+        abs_file_path = os.path.join(dirpath, file_path)
+        try:
+            music_file = MusicFile(abs_file_path)
+        except NotAMusicFileException:
+            #just ignore this file
+            logging.debug("File {} was not detected as a music file".format(file_path))
+            continue
+
+
+        #do we have enough right tag to go on from here  ?
+        if cluster.contains_empty_tag;
+
+        else:
+        #at first we gonna try the cddb batch search
+)
+
 
 """
 Flag handler, rename the flag, create the matching pattern for the music
@@ -117,7 +138,7 @@ class Params():
         self.flag_brainz_force = args.B
         self.flag_audio_guess = args.a
         self.flag_path_guess = args.P
-        self.flag_cddb = args.D
+        self.flag_cdid = args.D
         self.flag_soft = args.s
         if args.m:
             self.path = args.path

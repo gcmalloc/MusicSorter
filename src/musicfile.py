@@ -21,6 +21,13 @@ The acoustid api key to access the database.
 
 ACOUSTID_KEY = "jwsxE9b6"
 
+
+"""
+Define the main tags the musicFile must find to consider the file as done
+"""
+
+OBLIGATORY_TAG =['title', 'artist', 'album']
+
 """
 Exception launched if the music file is not a id3v2 tag
 """
@@ -249,19 +256,26 @@ class MusicFile(object):
     """
     def save(self):
         self.tags.save()
-    
+
     """
     Get the length of the track in milisecond
     """
     def length(self):
         return int(self.tags.info.length)
-    
+
     """
     Get the bitrate of the track
     """
     def bitrate(self):
         return int(self.tags.info.bitrate)
 
+    """
+    """
+    def has_mandatory_tag(self):
+        for tag in OBLIGATORY_TAG:
+            if tag not in self:
+                return False
+        return True
 """
 Emulate the mkdir -p command, create a directory and all it's children
 """
@@ -307,4 +321,5 @@ clean a title
 
 
 def clean_title(title):
-    return os.path.splitext(title)[0].strip(string.digits + '- ')
+    pass
+    #return os.path.splitext(title)[0].strip(string.digits + '- ')
